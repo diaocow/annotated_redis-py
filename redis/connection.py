@@ -28,7 +28,10 @@ SYM_CRLF = b('\r\n')
 SYM_LF = b('\n')
 SYM_EMPTY = b('')
 
-
+# 若当前系统未安装hiredis，则使用PythonParser作为默认解析类
+# 由于该类较HiredisParser性能差很多（10倍以上），所以生产环境下我们一般不会用到它，因此这里我也不再做注释
+# 关于解析类更多信息，@see HiredisParser 
+#
 class PythonParser(object):
     "Plain Python parsing class"
     MAX_READ_LENGTH = 1000000
@@ -148,8 +151,9 @@ class PythonParser(object):
         return response
 
 
+# redis-py 优先选择的解析类，使用它之前需要先安装hiredis
 class HiredisParser(object):
-    "Parser class for connections using Hiredis"
+
     def __init__(self):
         if not HIREDIS_AVAILABLE:
             raise RedisError("Hiredis is not installed")
@@ -174,6 +178,38 @@ class HiredisParser(object):
         self._sock = None
         self._reader = None
 
+	# 解析类核心函数，
+	# 
+	# hiredis.Reader类提供了两个方法用来解析redis服务器返回的数据流，它们分别是feed和gets方法：
+	# 
+	# 1. feed(bytestream): 把bytestrem添加进内部缓存
+	# 2. gets(): 解析内部缓存中的数据并返回结果
+	# 
+	# 这两个方法非常简单，我们看一个例子即可明白：
+	# 
+	# >>> reader = hiredis.Reader()
+	# >>> reader.feed("$5\r\nhello\r\n")   # feed中参数为redis服务器返回的原始数据流
+	# >>> reader.gets()
+	# 'hello'
+	# 
+	# 若内部缓存中的数据不完整，gets()方法返回False
+	# 
+	# >>> reader.feed("*2\r\n$5\r\nhello\r\n")
+	# >>> reader.gets()
+	# False
+	# >>> reader.feed("$5\r\nworld\r\n") # 此时内部缓存中的数据为: *2\r\n$5\r\nhello\r\n$5\r\nworld\r\n
+	# >>> reader.gets()
+	# ['hello', 'world']
+	#
+	# 若内部缓存中含有多条回复，则需要多次调用gets()方法
+	#
+	# >>> reader.feed('*2\r\n$5\r\nhello\r\n$5\r\nworld\r\n*2\r\n$5\r\nhello\r\n$5\r\nworld\r\n') # 譬如批量处理的命令回复
+	# >>> reader.gets()
+	# ['hello', 'world']
+	# >>> reader.gets()
+	['hello', 'world']
+	# 关于hiredis.Reader类更多请看:https://github.com/pietern/hiredis-py
+	#
     def read_response(self):
         if not self._reader:
             raise ConnectionError("Socket closed on remote end")
@@ -188,17 +224,19 @@ class HiredisParser(object):
             if not buffer:
                 raise ConnectionError("Socket closed on remote end")
             self._reader.feed(buffer)
-            # proactively, but not conclusively, check if more data is in the
-            # buffer. if the data received doesn't end with \n, there's more.
+			# 优化技巧：
+			# 若buffer中数据不是以'\n'结尾，则说明还未接受完服务器数据，直接开始下次循环(没必要调用gets()方法，因为肯定返回False）
             if not buffer.endswith(SYM_LF):
                 continue
             response = self._reader.gets()
         return response
 
-# 如果安装了hiredis，则使用HiredisParser作为DefaultParser，否则使用PythonParser作为默认DefaultParser
+
 if HIREDIS_AVAILABLE:
+	# 如果安装了hiredis，则使用HiredisParser作为DefaultParser，
     DefaultParser = HiredisParser
 else:
+	# 否则使用PythonParser作为DefaultParser
     DefaultParser = PythonParser
 
 
@@ -221,7 +259,7 @@ class Connection(object):
         self.encoding_errors = encoding_errors
         self.decode_responses = decode_responses
         self._sock = None
-		# response解析器，优先选择HiredisParser 
+		# redis response解析器，优先选择HiredisParser 
         self._parser = parser_class()
 
     def __del__(self):
