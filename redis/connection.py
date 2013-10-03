@@ -253,8 +253,8 @@ class Connection(object):
         self.host = host
         self.port = port
         # client连接的数据库，默认使用编号为0的数据库（一个redis实例默认有16个数据库） self.db = db self.password = password
-		self.db = db
-		self.password = password
+	self.db = db
+	self.password = password
         self.socket_timeout = socket_timeout
         self.encoding = encoding
         self.encoding_errors = encoding_errors
