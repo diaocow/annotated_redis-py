@@ -207,8 +207,9 @@ class HiredisParser(object):
 	# >>> reader.gets()
 	# ['hello', 'world']
 	# >>> reader.gets()
-	['hello', 'world']
-	# 关于hiredis.Reader类更多请看:https://github.com/pietern/hiredis-py
+	# ['hello', 'world']
+	#
+	# 关于hiredis.Reader类更多信息请看:https://github.com/pietern/hiredis-py
 	#
     def read_response(self):
         if not self._reader:
