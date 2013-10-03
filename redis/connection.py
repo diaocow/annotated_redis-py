@@ -29,7 +29,7 @@ SYM_LF = b('\n')
 SYM_EMPTY = b('')
 
 # 若当前系统未安装hiredis，则使用PythonParser作为默认解析类
-# 由于该类较HiredisParser性能差很多（10倍以上），所以生产环境下我们一般不会用到它，因此这里我也不再做注释
+# 由于该类比HiredisParser性能差很多（10倍以上），所以生产环境下我们一般不会用到它，因此这里我也不再做注释
 # 关于解析类更多信息，@see HiredisParser 
 #
 class PythonParser(object):
@@ -225,23 +225,23 @@ class HiredisParser(object):
             if not buffer:
                 raise ConnectionError("Socket closed on remote end")
             self._reader.feed(buffer)
-    		# 优化技巧：
-    		# 若buffer中数据不是以'\n'结尾，则说明还未接受完服务器数据，直接开始下次循环(没必要调用gets()方法，因为肯定返回False）
+        	# 小技巧：
+        	# 若buffer中数据不是以'\n'结尾，说明还未接受完服务器数据，则直接开始下次循环(没必要调用gets()方法，因为肯定返回False）
             if not buffer.endswith(SYM_LF):
                 continue
             response = self._reader.gets()
         return response
 
-
+# 设置DefaultParser
 if HIREDIS_AVAILABLE:
-    # 如果安装了hiredis，则使用HiredisParser作为DefaultParser，
+    # 若安装了hiredis，则使用HiredisParser作为DefaultParser，
     DefaultParser = HiredisParser
 else:
     # 否则使用PythonParser作为DefaultParser
     DefaultParser = PythonParser
 
 
-# TCP连接实现类（默认连接实现类）
+# TCP连接实现类
 class Connection(object):
     
     def __init__(self, host='localhost', port=6379, db=0, password=None,
@@ -249,18 +249,19 @@ class Connection(object):
                  encoding_errors='strict', decode_responses=False,
                  parser_class=DefaultParser):
         self.pid = os.getpid()
-    	# redis服务器的host/port
+        # redis服务器的host/port
         self.host = host
         self.port = port
-    	# 使用哪个数据库，默认使用编号为0的数据库（一个redis实例默认有16个数据库）
-        self.db = db
-        self.password = password
+        # client连接的数据库，默认使用编号为0的数据库（一个redis实例默认有16个数据库） self.db = db self.password = password
+		self.db = db
+		self.password = password
         self.socket_timeout = socket_timeout
         self.encoding = encoding
         self.encoding_errors = encoding_errors
         self.decode_responses = decode_responses
+    	# socket
         self._sock = None
-    	# redis response解析器，优先选择HiredisParser 
+        # redis response 解析器，优先选择HiredisParser 
         self._parser = parser_class()
 
     def __del__(self):
@@ -274,6 +275,7 @@ class Connection(object):
         if self._sock:
             return
         try:
+    		# 1. 建立TCP连接
             sock = self._connect()
         except socket.error:
             e = sys.exc_info()[1]
@@ -281,6 +283,7 @@ class Connection(object):
 
         self._sock = sock
         try:
+    		# 2. AUTH认证（可选）& 连接目标DB（SELECT-DB）
             self.on_connect()
         except RedisError:
             # clean up after any error in on_connect
@@ -294,30 +297,18 @@ class Connection(object):
         return sock
 
     def on_connect(self):
-        "Initialize the connection, authenticate and select a database"
         self._parser.on_connect(self)
-
-        # if a password is specified, authenticate
+        # 若redis服务器设置了密码，那么在使用之前需要先经过AUTH认证 
         if self.password:
             self.send_command('AUTH', self.password)
             if nativestr(self.read_response()) != 'OK':
                 raise AuthenticationError('Invalid Password')
 
-        # if a database is specified, switch to it
+        # 选择使用编号为db的数据库
         if self.db:
             self.send_command('SELECT', self.db)
             if nativestr(self.read_response()) != 'OK':
                 raise ConnectionError('Invalid Database')
-
-    def _error_message(self, exception):
-        # args for socket.error can either be (errno, "message")
-        # or just "message"
-        if len(exception.args) == 1:
-            return "Error connecting to %s:%s. %s." % \
-                (self.host, self.port, exception.args[0])
-        else:
-            return "Error %s connecting %s:%s. %s." % \
-                (exception.args[0], self.host, self.port, exception.args[1])
 
     # 关闭与Redis服务器之间的连接
     def disconnect(self):
@@ -331,18 +322,13 @@ class Connection(object):
             pass
         self._sock = None
 
-           raise
-
     # 向redis服务器发送命令
     def send_command(self, *args):
-        "Pack and send a command to the Redis server"
         self.send_packed_command(self.pack_command(*args))
 
     # 把命令按照Redis协议转换，譬如： 
-    # set name diaocow =>
-    # *3\r\n$3\r\nset\r\n$4\r\nname\r\n$7\r\ndiaocow\r\n FIXME
+    # "set name diaocow"  =>  "*3\r\n$3\r\nset\r\n$4\r\nname\r\n$7\r\ndiaocow\r\n"
     def pack_command(self, *args):
-        "Pack a series of arguments into a value Redis command"
         args_output = SYM_EMPTY.join([
             SYM_EMPTY.join((SYM_DOLLAR, b(str(len(k))), SYM_CRLF, k, SYM_CRLF))
             for k in imap(self.encode, args)])
@@ -350,12 +336,12 @@ class Connection(object):
             (SYM_STAR, b(str(len(args))), SYM_CRLF, args_output))
         return output
 
-    # @see send_command
     def send_packed_command(self, command):
         "Send an already packed command to the Redis server"
         if not self._sock:
             self.connect()
         try:
+    		# 发送命令
             self._sock.sendall(command)
         except socket.error:
             e = sys.exc_info()[1]
@@ -368,10 +354,12 @@ class Connection(object):
                                   (_errno, errmsg))
         except:
             self.disconnect()
+               raise
      
     # 读取命令执行结果
     def read_response(self):
         try:
+    		# @see HiredisParser.read_response
             response = self._parser.read_response()
         except:
             self.disconnect()
@@ -379,6 +367,16 @@ class Connection(object):
         if isinstance(response, ResponseError):
             raise response
         return response
+
+    def _error_message(self, exception):
+        # args for socket.error can either be (errno, "message")
+        # or just "message"
+        if len(exception.args) == 1:
+            return "Error connecting to %s:%s. %s." % \
+                (self.host, self.port, exception.args[0])
+        else:
+            return "Error %s connecting %s:%s. %s." % \
+                (exception.args[0], self.host, self.port, exception.args[1])
 
     def encode(self, value):
         "Return a bytestring representation of the value"
@@ -393,13 +391,13 @@ class Connection(object):
         return value
 
 
-# UnixDomain连接实现类
+# UnixDomain连接实现类(参数信息基本与Connection类相同，不再赘述)
+# @see Connection
 class UnixDomainSocketConnection(Connection):
     def __init__(self, path='', db=0, password=None,
                  socket_timeout=None, encoding='utf-8',
                  encoding_errors='strict', decode_responses=False,
                  parser_class=DefaultParser):
-    	# 参数信息基本与Connection类相同，不再赘述
         self.pid = os.getpid()
         self.path = path
         self.db = db
@@ -435,21 +433,21 @@ class ConnectionPool(object):
     def __init__(self, connection_class=Connection, max_connections=None,
                  **connection_kwargs):
         self.pid = os.getpid()
-    	# 连接池中连接的实现类（默认为Connection类）
+        # 连接池中连接的实现类（默认为Connection类）
         self.connection_class = connection_class
         self.connection_kwargs = connection_kwargs
-    	# 连接池中允许的最大连接数
+        # 连接池中允许的最大连接数
         self.max_connections = max_connections or 2 ** 31
-    	# 目前连接池中已经创建的连接数
+        # 目前连接池中已经创建的连接数
         self._created_connections = 0
-    	# 连接池中的空闲连接
+        # 连接池中的空闲连接
         self._available_connections = []
-    	# 连接池中正在被使用的连接
+        # 连接池中正在被使用的连接
         self._in_use_connections = set()
 
     # 检测连接池有效性，不允许跨进程使用 
     def _checkpid(self):
-    	# 若连接池所属进程不同于当前进程，则重新实例化连接池 
+        # 若连接池所属进程不同于当前进程，则重新实例化连接池 
         if self.pid != os.getpid():
             self.disconnect()
             self.__init__(self.connection_class, self.max_connections,
@@ -461,18 +459,18 @@ class ConnectionPool(object):
         try:
             connection = self._available_connections.pop()
         except IndexError:
-    		# 若没有可用的空闲连接，则创建一个新连接
+        	# 若没有可用的空闲连接，则创建一个新连接
             connection = self.make_connection()
         self._in_use_connections.add(connection)
         return connection
 
     # 创建一个新连接
     def make_connection(self):
-    	# 若当前连接池中的连接数已经超过max_connections，则raise exception
+        # 若当前连接池中的连接数已经超过max_connections，则raise exception
         if self._created_connections >= self.max_connections:
             raise ConnectionError("Too many connections")
-    	# ps: 其实这里不是线程安全的，存在race condition
-    	self._created_connections += 1 
+        # ps: 其实这里不是线程安全的，存在race condition
+        self._created_connections += 1 
         return self.connection_class(**self.connection_kwargs)
 
     # 释放一个连接（放回连接池）
@@ -490,7 +488,7 @@ class ConnectionPool(object):
             connection.disconnect()
 
 
-# 另一个版本的连接池实现， 与redis-py 默认连接池ConnectionPool主要区别在于：
+# 另一个版本的连接池实现， 与redis-py 默认连接池ConnectionPool主要区别在于： FIXME
 # 当连接池中没有可用的空闲连接，并且此时连接数也已经到达了上限，若此时有客户端尝试获取一个连接，它不会抛出异常，而是根据timeout的值采取相应的措施：
 #     a. timeout == None: 一直阻塞客户端，直到有一个连接可用
 #     b. timeout == numsec: 在numsec时间范围内阻塞客户端，若还是没有可用连接，则抛出异常
@@ -499,10 +497,10 @@ class BlockingConnectionPool(object):
 
     def __init__(self, max_connections=50, timeout=20, connection_class=None,
                  queue_class=None, **connection_kwargs):
-    	# 连接池中连接默认实现类：Connection
+        # 连接池中连接默认实现类：Connection
         if connection_class is None:
             connection_class = Connection
-    	# 连接池队列默认实现类：LifoQueue
+        # 连接池队列默认实现类：LifoQueue
         if queue_class is None:
             queue_class = LifoQueue
 
@@ -513,7 +511,7 @@ class BlockingConnectionPool(object):
         self.timeout = timeout
         self.pid = os.getpid()
 
-    	# 检测max_connections有效性
+        # 检测max_connections有效性
         is_valid = isinstance(max_connections, int) and max_connections > 0
         if not is_valid:
             raise ValueError('``max_connections`` must be a positive integer')
@@ -533,7 +531,7 @@ class BlockingConnectionPool(object):
         pid = os.getpid()
         if self.pid == pid:
             return
-    	# 若连接池所属进程不同于当前进程，则重新实例化连接池 
+        # 若连接池所属进程不同于当前进程，则重新实例化连接池 
         self.disconnect()
         self.reinstantiate()
 
@@ -559,12 +557,12 @@ class BlockingConnectionPool(object):
         self._checkpid()
         connection = None
         try:
-    		# 从连接池队列中获取一个连接
+        	# 从连接池队列中获取一个连接
             connection = self.pool.get(block=True, timeout=self.timeout)
         except Empty:
             raise ConnectionError("No connection available.")
 
-    	# 若获取的connection对象为None，则创建一个新的连接
+        # 若获取的connection对象为None，则创建一个新的连接
         if connection is None:
             connection = self.make_connection()
         return connection
