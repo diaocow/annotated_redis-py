@@ -1,0 +1,359 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+AuthenticationError	exceptions.py	/^class AuthenticationError(RedisError):$/;"	c
+BasePipeline	client.py	/^class BasePipeline(object):$/;"	c
+BlockingConnectionPool	connection.py	/^class BlockingConnectionPool(object):$/;"	c
+BusyLoadingError	exceptions.py	/^class BusyLoadingError(ConnectionError):$/;"	c
+Connection	connection.py	/^class Connection(object):$/;"	c
+ConnectionError	exceptions.py	/^class ConnectionError(ServerError):$/;"	c
+ConnectionPool	connection.py	/^class ConnectionPool(object):$/;"	c
+DataError	exceptions.py	/^class DataError(RedisError):$/;"	c
+DefaultParser	connection.py	/^    DefaultParser = HiredisParser$/;"	v	class:HiredisParser
+DefaultParser	connection.py	/^    DefaultParser = PythonParser$/;"	v
+EXCEPTION_CLASSES	connection.py	/^    EXCEPTION_CLASSES = {$/;"	v	class:PythonParser
+ExecAbortError	exceptions.py	/^class ExecAbortError(ResponseError):$/;"	c
+HIREDIS_AVAILABLE	utils.py	/^    HIREDIS_AVAILABLE = False$/;"	v
+HIREDIS_AVAILABLE	utils.py	/^    HIREDIS_AVAILABLE = True$/;"	v
+HiredisParser	connection.py	/^class HiredisParser(object):$/;"	c
+InvalidResponse	exceptions.py	/^class InvalidResponse(ServerError):$/;"	c
+LOCK_FOREVER	client.py	/^    LOCK_FOREVER = float(2 ** 31 + 1)  # 1 past max unix time$/;"	v	class:Lock
+LifoQueue	_compat.py	/^        class LifoQueue(Queue):$/;"	c
+Lock	client.py	/^class Lock(object):$/;"	c
+LockError	client.py	/^class LockError(RedisError):$/;"	c
+MAX_READ_LENGTH	connection.py	/^    MAX_READ_LENGTH = 1000000$/;"	v	class:PythonParser
+MasterNotFoundError	sentinel.py	/^class MasterNotFoundError(ConnectionError):$/;"	c
+NoScriptError	exceptions.py	/^class NoScriptError(ResponseError):$/;"	c
+Pipeline	client.py	/^class Pipeline(BasePipeline, Redis):$/;"	c
+PubSub	client.py	/^class PubSub(object):$/;"	c
+PubSubError	exceptions.py	/^class PubSubError(RedisError):$/;"	c
+PythonParser	connection.py	/^class PythonParser(object):$/;"	c
+RESPONSE_CALLBACKS	client.py	/^    RESPONSE_CALLBACKS = dict_merge($/;"	v	class:Redis
+RESPONSE_CALLBACKS	client.py	/^    RESPONSE_CALLBACKS = dict_merge($/;"	v	class:StrictRedis
+Redis	client.py	/^class Redis(StrictRedis):$/;"	c
+RedisError	exceptions.py	/^class RedisError(Exception):$/;"	c
+ResponseError	exceptions.py	/^class ResponseError(RedisError):$/;"	c
+SENTINEL_STATE_TYPES	client.py	/^SENTINEL_STATE_TYPES = {$/;"	v
+SYM_CRLF	connection.py	/^SYM_CRLF = b('\\r\\n')$/;"	v
+SYM_DOLLAR	connection.py	/^SYM_DOLLAR = b('$')$/;"	v
+SYM_EMPTY	client.py	/^SYM_EMPTY = b('')$/;"	v
+SYM_EMPTY	connection.py	/^SYM_EMPTY = b('')$/;"	v
+SYM_LF	connection.py	/^SYM_LF = b('\\n')$/;"	v
+SYM_STAR	connection.py	/^SYM_STAR = b('*')$/;"	v
+Script	client.py	/^class Script(object):$/;"	c
+Sentinel	sentinel.py	/^class Sentinel(object):$/;"	c
+SentinelConnectionPool	sentinel.py	/^class SentinelConnectionPool(ConnectionPool):$/;"	c
+SentinelManagedConnection	sentinel.py	/^class SentinelManagedConnection(Connection):$/;"	c
+ServerError	exceptions.py	/^class ServerError(RedisError):$/;"	c
+SlaveNotFoundError	sentinel.py	/^class SlaveNotFoundError(ConnectionError):$/;"	c
+StrictPipeline	client.py	/^class StrictPipeline(BasePipeline, StrictRedis):$/;"	c
+StrictRedis	client.py	/^class StrictRedis(object):$/;"	c
+UNWATCH_COMMANDS	client.py	/^    UNWATCH_COMMANDS = set(('DISCARD', 'EXEC', 'UNWATCH'))$/;"	v	class:BasePipeline
+UnixDomainSocketConnection	connection.py	/^class UnixDomainSocketConnection(Connection):$/;"	c
+VERSION	__init__.py	/^VERSION = tuple(map(int, __version__.split('.')))$/;"	v
+WatchError	exceptions.py	/^class WatchError(RedisError):$/;"	c
+__all__	__init__.py	/^__all__ = [$/;"	v
+__call__	client.py	/^    def __call__(self, keys=[], args=[], client=None):$/;"	m	class:Script	file:
+__contains__	client.py	/^    __contains__ = exists$/;"	v	class:StrictRedis
+__del__	client.py	/^    def __del__(self):$/;"	m	class:BasePipeline	file:
+__del__	client.py	/^    def __del__(self):$/;"	m	class:PubSub	file:
+__del__	connection.py	/^    def __del__(self):$/;"	m	class:Connection	file:
+__del__	connection.py	/^    def __del__(self):$/;"	m	class:HiredisParser	file:
+__del__	connection.py	/^    def __del__(self):$/;"	m	class:PythonParser	file:
+__delitem__	client.py	/^    __delitem__ = delete$/;"	v	class:StrictRedis
+__enter__	client.py	/^    def __enter__(self):$/;"	m	class:BasePipeline	file:
+__enter__	client.py	/^    def __enter__(self):$/;"	m	class:Lock	file:
+__exit__	client.py	/^    def __exit__(self, exc_type, exc_value, traceback):$/;"	m	class:BasePipeline	file:
+__exit__	client.py	/^    def __exit__(self, exc_type, exc_value, traceback):$/;"	m	class:Lock	file:
+__getitem__	client.py	/^    def __getitem__(self, name):$/;"	m	class:StrictRedis	file:
+__init__	client.py	/^    def __init__(self, connection_pool, response_callbacks, transaction,$/;"	m	class:BasePipeline
+__init__	client.py	/^    def __init__(self, connection_pool, shard_hint=None):$/;"	m	class:PubSub
+__init__	client.py	/^    def __init__(self, host='localhost', port=6379,$/;"	m	class:StrictRedis
+__init__	client.py	/^    def __init__(self, redis, name, timeout=None, sleep=0.1):$/;"	m	class:Lock
+__init__	client.py	/^    def __init__(self, registered_client, script):$/;"	m	class:Script
+__init__	connection.py	/^    def __init__(self):$/;"	m	class:HiredisParser
+__init__	connection.py	/^    def __init__(self):$/;"	m	class:PythonParser
+__init__	connection.py	/^    def __init__(self, connection_class=Connection, max_connections=None,$/;"	m	class:ConnectionPool
+__init__	connection.py	/^    def __init__(self, host='localhost', port=6379, db=0, password=None,$/;"	m	class:Connection
+__init__	connection.py	/^    def __init__(self, max_connections=50, timeout=20, connection_class=None,$/;"	m	class:BlockingConnectionPool
+__init__	connection.py	/^    def __init__(self, path='', db=0, password=None,$/;"	m	class:UnixDomainSocketConnection
+__init__	sentinel.py	/^    def __init__(self, **kwargs):$/;"	m	class:SentinelManagedConnection
+__init__	sentinel.py	/^    def __init__(self, sentinels, password=None, socket_timeout=None,$/;"	m	class:Sentinel
+__init__	sentinel.py	/^    def __init__(self, service_name, sentinel_manager, **kwargs):$/;"	m	class:SentinelConnectionPool
+__len__	client.py	/^    def __len__(self):$/;"	m	class:BasePipeline	file:
+__setitem__	client.py	/^    __setitem__ = set$/;"	v	class:StrictRedis
+__version__	__init__.py	/^__version__ = '2.8.0'$/;"	v
+_checkpid	connection.py	/^    def _checkpid(self):$/;"	m	class:BlockingConnectionPool
+_checkpid	connection.py	/^    def _checkpid(self):$/;"	m	class:ConnectionPool
+_connect	connection.py	/^    def _connect(self):$/;"	m	class:Connection
+_connect	connection.py	/^    def _connect(self):$/;"	m	class:UnixDomainSocketConnection
+_error_message	connection.py	/^    def _error_message(self, exception):$/;"	m	class:Connection
+_error_message	connection.py	/^    def _error_message(self, exception):$/;"	m	class:UnixDomainSocketConnection
+_execute_pipeline	client.py	/^    def _execute_pipeline(self, connection, commands, raise_on_error):$/;"	m	class:BasePipeline
+_execute_transaction	client.py	/^    def _execute_transaction(self, connection, commands, raise_on_error):$/;"	m	class:BasePipeline
+_get	_compat.py	/^            def _get(self):$/;"	m	class:LifoQueue
+_init	_compat.py	/^            def _init(self, maxsize):$/;"	m	class:LifoQueue
+_put	_compat.py	/^            def _put(self, item):$/;"	m	class:LifoQueue
+_qsize	_compat.py	/^            def _qsize(self, len=len):$/;"	m	class:LifoQueue
+_zaggregate	client.py	/^    def _zaggregate(self, command, dest, keys, aggregate=None):$/;"	m	class:StrictRedis
+acquire	client.py	/^    def acquire(self, blocking=True):$/;"	m	class:Lock
+append	client.py	/^    def append(self, key, value):$/;"	m	class:StrictRedis
+b	_compat.py	/^    b = lambda x: x$/;"	v
+b	_compat.py	/^    b = lambda x: x.encode('iso-8859-1') if not isinstance(x, bytes) else x$/;"	v
+basestring	_compat.py	/^    basestring = basestring$/;"	v
+basestring	_compat.py	/^    basestring = str$/;"	v
+bgrewriteaof	client.py	/^    def bgrewriteaof(self):$/;"	m	class:StrictRedis
+bgsave	client.py	/^    def bgsave(self):$/;"	m	class:StrictRedis
+bitcount	client.py	/^    def bitcount(self, key, start=None, end=None):$/;"	m	class:StrictRedis
+bitop	client.py	/^    def bitop(self, operation, dest, *keys):$/;"	m	class:StrictRedis
+blpop	client.py	/^    def blpop(self, keys, timeout=0):$/;"	m	class:StrictRedis
+brpop	client.py	/^    def brpop(self, keys, timeout=0):$/;"	m	class:StrictRedis
+brpoplpush	client.py	/^    def brpoplpush(self, src, dst, timeout=0):$/;"	m	class:StrictRedis
+byte_to_chr	_compat.py	/^    byte_to_chr = lambda x: chr(x)$/;"	v
+byte_to_chr	_compat.py	/^    byte_to_chr = lambda x: x$/;"	v
+bytes	_compat.py	/^    bytes = bytes$/;"	v
+bytes	_compat.py	/^    bytes = str$/;"	v
+check_master_state	sentinel.py	/^    def check_master_state(self, state, service_name):$/;"	m	class:Sentinel
+client_getname	client.py	/^    def client_getname(self):$/;"	m	class:StrictRedis
+client_kill	client.py	/^    def client_kill(self, address):$/;"	m	class:StrictRedis
+client_list	client.py	/^    def client_list(self):$/;"	m	class:StrictRedis
+client_setname	client.py	/^    def client_setname(self, name):$/;"	m	class:StrictRedis
+close	client.py	/^    def close(self):$/;"	m	class:PubSub
+config_get	client.py	/^    def config_get(self, pattern="*"):$/;"	m	class:StrictRedis
+config_resetstat	client.py	/^    def config_resetstat(self):$/;"	m	class:StrictRedis
+config_set	client.py	/^    def config_set(self, name, value):$/;"	m	class:StrictRedis
+connect	connection.py	/^    def connect(self):$/;"	m	class:Connection
+connect	sentinel.py	/^    def connect(self):$/;"	m	class:SentinelManagedConnection
+connect_to	sentinel.py	/^    def connect_to(self, address):$/;"	m	class:SentinelManagedConnection
+dbsize	client.py	/^    def dbsize(self):$/;"	m	class:StrictRedis
+debug_object	client.py	/^    def debug_object(self, key):$/;"	m	class:StrictRedis
+decr	client.py	/^    def decr(self, name, amount=1):$/;"	m	class:StrictRedis
+delete	client.py	/^    def delete(self, *names):$/;"	m	class:StrictRedis
+dict_merge	client.py	/^def dict_merge(*dicts):$/;"	f
+disconnect	connection.py	/^    def disconnect(self):$/;"	m	class:BlockingConnectionPool
+disconnect	connection.py	/^    def disconnect(self):$/;"	m	class:Connection
+disconnect	connection.py	/^    def disconnect(self):$/;"	m	class:ConnectionPool
+discover_master	sentinel.py	/^    def discover_master(self, service_name):$/;"	m	class:Sentinel
+discover_slaves	sentinel.py	/^    def discover_slaves(self, service_name):$/;"	m	class:Sentinel
+dump	client.py	/^    def dump(self, name):$/;"	m	class:StrictRedis
+echo	client.py	/^    def echo(self, value):$/;"	m	class:StrictRedis
+encode	connection.py	/^    def encode(self, value):$/;"	m	class:Connection
+encoding	connection.py	/^    encoding = None$/;"	v	class:PythonParser
+eval	client.py	/^    def eval(self, script, numkeys, *keys_and_args):$/;"	m	class:StrictRedis
+evalsha	client.py	/^    def evalsha(self, sha, numkeys, *keys_and_args):$/;"	m	class:StrictRedis
+execute	client.py	/^    def execute(self, raise_on_error=True):$/;"	m	class:BasePipeline
+execute_command	client.py	/^    def execute_command(self, *args, **kwargs):$/;"	m	class:BasePipeline
+execute_command	client.py	/^    def execute_command(self, *args, **kwargs):$/;"	m	class:PubSub
+execute_command	client.py	/^    def execute_command(self, *args, **options):$/;"	m	class:StrictRedis
+exists	client.py	/^    def exists(self, name):$/;"	m	class:StrictRedis
+expire	client.py	/^    def expire(self, name, time):$/;"	m	class:StrictRedis
+expireat	client.py	/^    def expireat(self, name, when):$/;"	m	class:StrictRedis
+filter_slaves	sentinel.py	/^    def filter_slaves(self, slaves):$/;"	m	class:Sentinel
+float_or_none	client.py	/^def float_or_none(response):$/;"	f
+flushall	client.py	/^    def flushall(self):$/;"	m	class:StrictRedis
+flushdb	client.py	/^    def flushdb(self):$/;"	m	class:StrictRedis
+from_url	client.py	/^    def from_url(cls, url, db=None, **kwargs):$/;"	m	class:StrictRedis
+from_url	utils.py	/^def from_url(url, db=None, **kwargs):$/;"	f
+get	client.py	/^    def get(self, name):$/;"	m	class:StrictRedis
+get_connection	connection.py	/^    def get_connection(self, command_name, *keys, **options):$/;"	m	class:BlockingConnectionPool
+get_connection	connection.py	/^    def get_connection(self, command_name, *keys, **options):$/;"	m	class:ConnectionPool
+get_master_address	sentinel.py	/^    def get_master_address(self):$/;"	m	class:SentinelConnectionPool
+get_value	client.py	/^    def get_value(value):$/;"	f	function:parse_info
+getbit	client.py	/^    def getbit(self, name, offset):$/;"	m	class:StrictRedis
+getrange	client.py	/^    def getrange(self, key, start, end):$/;"	m	class:StrictRedis
+getset	client.py	/^    def getset(self, name, value):$/;"	m	class:StrictRedis
+hdel	client.py	/^    def hdel(self, name, *keys):$/;"	m	class:StrictRedis
+hexists	client.py	/^    def hexists(self, name, key):$/;"	m	class:StrictRedis
+hget	client.py	/^    def hget(self, name, key):$/;"	m	class:StrictRedis
+hgetall	client.py	/^    def hgetall(self, name):$/;"	m	class:StrictRedis
+hincrby	client.py	/^    def hincrby(self, name, key, amount=1):$/;"	m	class:StrictRedis
+hincrbyfloat	client.py	/^    def hincrbyfloat(self, name, key, amount=1.0):$/;"	m	class:StrictRedis
+hkeys	client.py	/^    def hkeys(self, name):$/;"	m	class:StrictRedis
+hlen	client.py	/^    def hlen(self, name):$/;"	m	class:StrictRedis
+hmget	client.py	/^    def hmget(self, name, keys, *args):$/;"	m	class:StrictRedis
+hmset	client.py	/^    def hmset(self, name, mapping):$/;"	m	class:StrictRedis
+hset	client.py	/^    def hset(self, name, key, value):$/;"	m	class:StrictRedis
+hsetnx	client.py	/^    def hsetnx(self, name, key, value):$/;"	m	class:StrictRedis
+hvals	client.py	/^    def hvals(self, name):$/;"	m	class:StrictRedis
+imap	_compat.py	/^    imap = map$/;"	v
+immediate_execute_command	client.py	/^    def immediate_execute_command(self, *args, **options):$/;"	m	class:BasePipeline
+incr	client.py	/^    def incr(self, name, amount=1):$/;"	m	class:StrictRedis
+incrby	client.py	/^    def incrby(self, name, amount=1):$/;"	m	class:StrictRedis
+incrbyfloat	client.py	/^    def incrbyfloat(self, name, amount=1.0):$/;"	m	class:StrictRedis
+info	client.py	/^    def info(self, section=None):$/;"	m	class:StrictRedis
+int_or_none	client.py	/^def int_or_none(response):$/;"	f
+iteritems	_compat.py	/^    iteritems = lambda x: iter(x.items())$/;"	v
+iteritems	_compat.py	/^    iteritems = lambda x: x.iteritems()$/;"	v
+iterkeys	_compat.py	/^    iterkeys = lambda x: iter(x.keys())$/;"	v
+iterkeys	_compat.py	/^    iterkeys = lambda x: x.iterkeys()$/;"	v
+itervalues	_compat.py	/^    itervalues = lambda x: iter(x.values())$/;"	v
+itervalues	_compat.py	/^    itervalues = lambda x: x.itervalues()$/;"	v
+izip	_compat.py	/^    izip = zip$/;"	v
+keys	client.py	/^    def keys(self, pattern='*'):$/;"	m	class:StrictRedis
+lastsave	client.py	/^    def lastsave(self):$/;"	m	class:StrictRedis
+lindex	client.py	/^    def lindex(self, name, index):$/;"	m	class:StrictRedis
+linsert	client.py	/^    def linsert(self, name, where, refvalue, value):$/;"	m	class:StrictRedis
+list_or_args	client.py	/^def list_or_args(keys, args):$/;"	f
+listen	client.py	/^    def listen(self):$/;"	m	class:PubSub
+llen	client.py	/^    def llen(self, name):$/;"	m	class:StrictRedis
+load_scripts	client.py	/^    def load_scripts(self):$/;"	m	class:BasePipeline
+lock	client.py	/^    def lock(self, name, timeout=None, sleep=0.1):$/;"	m	class:StrictRedis
+long	_compat.py	/^    long = int$/;"	v
+long	_compat.py	/^    long = long$/;"	v
+lpop	client.py	/^    def lpop(self, name):$/;"	m	class:StrictRedis
+lpush	client.py	/^    def lpush(self, name, *values):$/;"	m	class:StrictRedis
+lpushx	client.py	/^    def lpushx(self, name, value):$/;"	m	class:StrictRedis
+lrange	client.py	/^    def lrange(self, name, start, end):$/;"	m	class:StrictRedis
+lrem	client.py	/^    def lrem(self, name, count, value):$/;"	m	class:StrictRedis
+lrem	client.py	/^    def lrem(self, name, value, num=0):$/;"	m	class:Redis
+lset	client.py	/^    def lset(self, name, index, value):$/;"	m	class:StrictRedis
+ltrim	client.py	/^    def ltrim(self, name, start, end):$/;"	m	class:StrictRedis
+make_connection	connection.py	/^    def make_connection(self):$/;"	m	class:BlockingConnectionPool
+make_connection	connection.py	/^    def make_connection(self):$/;"	m	class:ConnectionPool
+master_for	sentinel.py	/^    def master_for(self, service_name, redis_class=StrictRedis,$/;"	m	class:Sentinel
+mget	client.py	/^    def mget(self, keys, *args):$/;"	m	class:StrictRedis
+move	client.py	/^    def move(self, name, db):$/;"	m	class:StrictRedis
+mset	client.py	/^    def mset(self, *args, **kwargs):$/;"	m	class:StrictRedis
+msetnx	client.py	/^    def msetnx(self, *args, **kwargs):$/;"	m	class:StrictRedis
+multi	client.py	/^    def multi(self):$/;"	m	class:BasePipeline
+nativestr	_compat.py	/^        x if isinstance(x, str) else x.decode('utf-8', 'replace')$/;"	v
+nativestr	_compat.py	/^        x if isinstance(x, str) else x.encode('utf-8', 'replace')$/;"	v
+next	_compat.py	/^    next = lambda x: x.next()$/;"	v
+next	_compat.py	/^    next = next$/;"	v
+object	client.py	/^    def object(self, infotype, key):$/;"	m	class:StrictRedis
+on_connect	connection.py	/^    def on_connect(self):$/;"	m	class:Connection
+on_connect	connection.py	/^    def on_connect(self, connection):$/;"	m	class:HiredisParser
+on_connect	connection.py	/^    def on_connect(self, connection):$/;"	m	class:PythonParser
+on_disconnect	connection.py	/^    def on_disconnect(self):$/;"	m	class:HiredisParser
+on_disconnect	connection.py	/^    def on_disconnect(self):$/;"	m	class:PythonParser
+pack_command	connection.py	/^    def pack_command(self, *args):$/;"	m	class:Connection
+pairs_to_dict	client.py	/^def pairs_to_dict(response):$/;"	f
+pairs_to_dict_typed	client.py	/^def pairs_to_dict_typed(response, type_info):$/;"	f
+parse_client	client.py	/^def parse_client(response, **options):$/;"	f
+parse_config	client.py	/^def parse_config(response, **options):$/;"	f
+parse_debug_object	client.py	/^def parse_debug_object(response):$/;"	f
+parse_error	connection.py	/^    def parse_error(self, response):$/;"	m	class:PythonParser
+parse_info	client.py	/^def parse_info(response):$/;"	f
+parse_object	client.py	/^def parse_object(response, infotype):$/;"	f
+parse_response	client.py	/^    def parse_response(self):$/;"	m	class:PubSub
+parse_response	client.py	/^    def parse_response(self, connection, command_name, **options):$/;"	m	class:BasePipeline
+parse_response	client.py	/^    def parse_response(self, connection, command_name, **options):$/;"	m	class:StrictRedis
+parse_script	client.py	/^def parse_script(response, **options):$/;"	f
+parse_sentinel	client.py	/^def parse_sentinel(response, **options):$/;"	f
+parse_sentinel_state	client.py	/^def parse_sentinel_state(item):$/;"	f
+persist	client.py	/^    def persist(self, name):$/;"	m	class:StrictRedis
+pexpire	client.py	/^    def pexpire(self, name, time):$/;"	m	class:StrictRedis
+pexpireat	client.py	/^    def pexpireat(self, name, when):$/;"	m	class:StrictRedis
+ping	client.py	/^    def ping(self):$/;"	m	class:StrictRedis
+pipeline	client.py	/^    def pipeline(self, transaction=True, shard_hint=None):$/;"	m	class:Redis
+pipeline	client.py	/^    def pipeline(self, transaction=True, shard_hint=None):$/;"	m	class:StrictRedis
+pipeline_execute_command	client.py	/^    def pipeline_execute_command(self, *args, **options):$/;"	m	class:BasePipeline
+psetex	client.py	/^    def psetex(self, name, time_ms, value):$/;"	m	class:StrictRedis
+psubscribe	client.py	/^    def psubscribe(self, patterns):$/;"	m	class:PubSub
+pttl	client.py	/^    def pttl(self, name):$/;"	m	class:StrictRedis
+publish	client.py	/^    def publish(self, channel, message):$/;"	m	class:StrictRedis
+pubsub	client.py	/^    def pubsub(self, shard_hint=None):$/;"	m	class:StrictRedis
+punsubscribe	client.py	/^    def punsubscribe(self, patterns=[]):$/;"	m	class:PubSub
+raise_first_error	client.py	/^    def raise_first_error(self, response):$/;"	m	class:BasePipeline
+randomkey	client.py	/^    def randomkey(self):$/;"	m	class:StrictRedis
+read	connection.py	/^    def read(self, length=None):$/;"	m	class:PythonParser
+read_response	connection.py	/^    def read_response(self):$/;"	m	class:Connection
+read_response	connection.py	/^    def read_response(self):$/;"	m	class:HiredisParser
+read_response	connection.py	/^    def read_response(self):$/;"	m	class:PythonParser
+register_script	client.py	/^    def register_script(self, script):$/;"	m	class:StrictRedis
+reinstantiate	connection.py	/^    def reinstantiate(self):$/;"	m	class:BlockingConnectionPool
+release	client.py	/^    def release(self):$/;"	m	class:Lock
+release	connection.py	/^    def release(self, connection):$/;"	m	class:BlockingConnectionPool
+release	connection.py	/^    def release(self, connection):$/;"	m	class:ConnectionPool
+rename	client.py	/^    def rename(self, src, dst):$/;"	m	class:StrictRedis
+renamenx	client.py	/^    def renamenx(self, src, dst):$/;"	m	class:StrictRedis
+reset	client.py	/^    def reset(self):$/;"	m	class:BasePipeline
+reset	client.py	/^    def reset(self):$/;"	m	class:PubSub
+restore	client.py	/^    def restore(self, name, ttl, value):$/;"	m	class:StrictRedis
+rotate_slaves	sentinel.py	/^    def rotate_slaves(self):$/;"	m	class:SentinelConnectionPool
+rpop	client.py	/^    def rpop(self, name):$/;"	m	class:StrictRedis
+rpoplpush	client.py	/^    def rpoplpush(self, src, dst):$/;"	m	class:StrictRedis
+rpush	client.py	/^    def rpush(self, name, *values):$/;"	m	class:StrictRedis
+rpushx	client.py	/^    def rpushx(self, name, value):$/;"	m	class:StrictRedis
+sadd	client.py	/^    def sadd(self, name, *values):$/;"	m	class:StrictRedis
+save	client.py	/^    def save(self):$/;"	m	class:StrictRedis
+scard	client.py	/^    def scard(self, name):$/;"	m	class:StrictRedis
+script_exists	client.py	/^    def script_exists(self, *args):$/;"	m	class:StrictRedis
+script_flush	client.py	/^    def script_flush(self):$/;"	m	class:StrictRedis
+script_kill	client.py	/^    def script_kill(self):$/;"	m	class:StrictRedis
+script_load	client.py	/^    def script_load(self, script):$/;"	m	class:StrictRedis
+script_load_for_pipeline	client.py	/^    def script_load_for_pipeline(self, script):$/;"	m	class:BasePipeline
+sdiff	client.py	/^    def sdiff(self, keys, *args):$/;"	m	class:StrictRedis
+sdiffstore	client.py	/^    def sdiffstore(self, dest, keys, *args):$/;"	m	class:StrictRedis
+send_command	connection.py	/^    def send_command(self, *args):$/;"	m	class:Connection
+send_packed_command	connection.py	/^    def send_packed_command(self, command):$/;"	m	class:Connection
+sentinel	client.py	/^    def sentinel(self, *args):$/;"	m	class:StrictRedis
+sentinel_get_master_addr_by_name	client.py	/^    def sentinel_get_master_addr_by_name(self, service_name):$/;"	m	class:StrictRedis
+sentinel_masters	client.py	/^    def sentinel_masters(self):$/;"	m	class:StrictRedis
+sentinel_sentinels	client.py	/^    def sentinel_sentinels(self, service_name):$/;"	m	class:StrictRedis
+sentinel_slaves	client.py	/^    def sentinel_slaves(self, service_name):$/;"	m	class:StrictRedis
+set	client.py	/^    def set(self, name, value, ex=None, px=None, nx=False, xx=False):$/;"	m	class:StrictRedis
+set_response_callback	client.py	/^    def set_response_callback(self, command, callback):$/;"	m	class:StrictRedis
+setbit	client.py	/^    def setbit(self, name, offset, value):$/;"	m	class:StrictRedis
+setex	client.py	/^    def setex(self, name, time, value):$/;"	m	class:StrictRedis
+setex	client.py	/^    def setex(self, name, value, time):$/;"	m	class:Redis
+setnx	client.py	/^    def setnx(self, name, value):$/;"	m	class:StrictRedis
+setrange	client.py	/^    def setrange(self, name, offset, value):$/;"	m	class:StrictRedis
+shutdown	client.py	/^    def shutdown(self):$/;"	m	class:StrictRedis
+sinter	client.py	/^    def sinter(self, keys, *args):$/;"	m	class:StrictRedis
+sinterstore	client.py	/^    def sinterstore(self, dest, keys, *args):$/;"	m	class:StrictRedis
+sismember	client.py	/^    def sismember(self, name, value):$/;"	m	class:StrictRedis
+slave_for	sentinel.py	/^    def slave_for(self, service_name, redis_class=StrictRedis,$/;"	m	class:Sentinel
+slaveof	client.py	/^    def slaveof(self, host=None, port=None):$/;"	m	class:StrictRedis
+smembers	client.py	/^    def smembers(self, name):$/;"	m	class:StrictRedis
+smove	client.py	/^    def smove(self, src, dst, value):$/;"	m	class:StrictRedis
+sort	client.py	/^    def sort(self, name, start=None, num=None, by=None, get=None,$/;"	m	class:StrictRedis
+sort_return_tuples	client.py	/^def sort_return_tuples(response, **options):$/;"	f
+spop	client.py	/^    def spop(self, name):$/;"	m	class:StrictRedis
+srandmember	client.py	/^    def srandmember(self, name, number=None):$/;"	m	class:StrictRedis
+srem	client.py	/^    def srem(self, name, *values):$/;"	m	class:StrictRedis
+string_keys_to_dict	client.py	/^def string_keys_to_dict(key_string, callback):$/;"	f
+strlen	client.py	/^    def strlen(self, name):$/;"	m	class:StrictRedis
+subscribe	client.py	/^    def subscribe(self, channels):$/;"	m	class:PubSub
+substr	client.py	/^    def substr(self, name, start, end=-1):$/;"	m	class:StrictRedis
+sunion	client.py	/^    def sunion(self, keys, *args):$/;"	m	class:StrictRedis
+sunionstore	client.py	/^    def sunionstore(self, dest, keys, *args):$/;"	m	class:StrictRedis
+time	client.py	/^    def time(self):$/;"	m	class:StrictRedis
+timestamp_to_datetime	client.py	/^def timestamp_to_datetime(response):$/;"	f
+transaction	client.py	/^    def transaction(self, func, *watches, **kwargs):$/;"	m	class:StrictRedis
+ttl	client.py	/^    def ttl(self, name):$/;"	m	class:StrictRedis
+type	client.py	/^    def type(self, name):$/;"	m	class:StrictRedis
+u	_compat.py	/^    u = lambda x: x$/;"	v
+u	_compat.py	/^    u = lambda x: x.decode()$/;"	v
+unichr	_compat.py	/^    unichr = chr$/;"	v
+unichr	_compat.py	/^    unichr = unichr$/;"	v
+unicode	_compat.py	/^    unicode = str$/;"	v
+unicode	_compat.py	/^    unicode = unicode$/;"	v
+unsubscribe	client.py	/^    def unsubscribe(self, channels=[]):$/;"	m	class:PubSub
+unwatch	client.py	/^    def unwatch(self):$/;"	m	class:BasePipeline
+unwatch	client.py	/^    def unwatch(self):$/;"	m	class:StrictRedis
+watch	client.py	/^    def watch(self, *names):$/;"	m	class:BasePipeline
+watch	client.py	/^    def watch(self, *names):$/;"	m	class:StrictRedis
+xrange	_compat.py	/^    xrange = range$/;"	v
+xrange	_compat.py	/^    xrange = xrange$/;"	v
+zadd	client.py	/^    def zadd(self, name, *args, **kwargs):$/;"	m	class:Redis
+zadd	client.py	/^    def zadd(self, name, *args, **kwargs):$/;"	m	class:StrictRedis
+zcard	client.py	/^    def zcard(self, name):$/;"	m	class:StrictRedis
+zcount	client.py	/^    def zcount(self, name, min, max):$/;"	m	class:StrictRedis
+zincrby	client.py	/^    def zincrby(self, name, value, amount=1):$/;"	m	class:StrictRedis
+zinterstore	client.py	/^    def zinterstore(self, dest, keys, aggregate=None):$/;"	m	class:StrictRedis
+zrange	client.py	/^    def zrange(self, name, start, end, desc=False, withscores=False,$/;"	m	class:StrictRedis
+zrangebyscore	client.py	/^    def zrangebyscore(self, name, min, max, start=None, num=None,$/;"	m	class:StrictRedis
+zrank	client.py	/^    def zrank(self, name, value):$/;"	m	class:StrictRedis
+zrem	client.py	/^    def zrem(self, name, *values):$/;"	m	class:StrictRedis
+zremrangebyrank	client.py	/^    def zremrangebyrank(self, name, min, max):$/;"	m	class:StrictRedis
+zremrangebyscore	client.py	/^    def zremrangebyscore(self, name, min, max):$/;"	m	class:StrictRedis
+zrevrange	client.py	/^    def zrevrange(self, name, start, end, withscores=False,$/;"	m	class:StrictRedis
+zrevrangebyscore	client.py	/^    def zrevrangebyscore(self, name, max, min, start=None, num=None,$/;"	m	class:StrictRedis
+zrevrank	client.py	/^    def zrevrank(self, name, value):$/;"	m	class:StrictRedis
+zscore	client.py	/^    def zscore(self, name, value):$/;"	m	class:StrictRedis
+zset_score_pairs	client.py	/^def zset_score_pairs(response, **options):$/;"	f
+zunionstore	client.py	/^    def zunionstore(self, dest, keys, aggregate=None):$/;"	m	class:StrictRedis
