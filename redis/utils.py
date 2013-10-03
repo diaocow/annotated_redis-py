@@ -1,3 +1,4 @@
+# 若系统安装了hiredis，则HIREDIS_AVAILABLE为True，否则为False
 try:
     import hiredis
     HIREDIS_AVAILABLE = True
