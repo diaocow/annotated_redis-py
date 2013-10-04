@@ -391,7 +391,7 @@ class StrictRedis(object):
         self.response_callbacks = self.__class__.RESPONSE_CALLBACKS.copy()
 
     # 自定义命令返回结果处理方法
-    # @see RESPONSE_CALLBACKS
+    # @see StrictRedis.RESPONSE_CALLBACKS
     def set_response_callback(self, command, callback):
         "Set a custom Response Callback"
         self.response_callbacks[command] = callback
@@ -451,13 +451,14 @@ class StrictRedis(object):
         # 从连接池中获取一个连接
         connection = pool.get_connection(command_name, **options)
         try:
-        	# 向redis发出command命令
+            # 向redis发出command命令
             connection.send_command(*args)
-        	# 返回command执行结果
+            # 返回command执行结果
             return self.parse_response(connection, command_name, **options)
         except ConnectionError:
+            # socket 链接错误， retry
             connection.disconnect()
-            connection.send_command(*args) # FIXME
+            connection.send_command(*args) 
             return self.parse_response(connection, command_name, **options)
         finally: 
         	# 释放连接 
@@ -1727,14 +1728,14 @@ class PubSub(object):
         connection = self.connection
 
         try:
-        	# 发送命令(PSUBSCRIBE, SUBSCRIBE, PUNSUBSCRIBE, UNSUBSCRIBE)
+	    # 发送命令(PSUBSCRIBE, SUBSCRIBE, PUNSUBSCRIBE, UNSUBSCRIBE)
             connection.send_command(*args)
         except ConnectionError:
-        	# 若socket连接出现错误，则retry：
-        	# a. 重新连接redis服务器
-        	# b. 订阅之前所有的频道
-        	# c. 订阅之前多有的模式
-        	# d. 重新发送刚才未成功发送的命令
+	    # 若socket连接出现错误，则retry：
+	    # a. 重新连接redis服务器
+	    # b. 订阅之前所有的频道
+	    # c. 订阅之前多有的模式
+	    # d. 重新发送刚才未成功发送的命令
             connection.disconnect()
             connection.connect()
             for channel in self.channels:
@@ -1752,7 +1753,7 @@ class PubSub(object):
         response = self.connection.read_response()
         if nativestr(response[0]) in self.subscribe_commands:
             self.subscription_count = response[2]
-    		# 若当前客户端没有订阅任何频道或者模式，则断开与redis服务器之间的连接(ps: 个人觉得这步不是很有必要)
+	    # 若当前客户端没有订阅任何频道或者模式，则断开与redis服务器之间的连接(ps: 个人觉得这步不是很有必要)
             if not self.subscription_count:
                 self.reset()
         return response
@@ -1813,7 +1814,7 @@ class PubSub(object):
     def listen(self):
         while self.subscription_count or self.channels or self.patterns:
             r = self.parse_response()
-        	# 收到的消息类型
+	   # 收到的消息类型
             msg_type = nativestr(r[0])
         	# 模式消息
             if msg_type == 'pmessage':
@@ -1823,7 +1824,7 @@ class PubSub(object):
                     'channel': nativestr(r[2]),
                     'data': r[3]
                 }
-        	# 频道消息或者PSUBSCRIBE, SUBSCRIBE等命令执行的返回结果
+	    # 频道消息或者PSUBSCRIBE, SUBSCRIBE等命令执行的返回结果
             else:
                 msg = {
                     'type': msg_type,
@@ -1831,7 +1832,7 @@ class PubSub(object):
                     'channel': nativestr(r[1]),
                     'data': r[2]
                 }
-        	# 返回消息
+	    # 返回消息
             yield msg
 
 
@@ -1928,7 +1929,7 @@ class BasePipeline(object):
     # 1. 处于事务模式，则把命令添加到command_stack，稍后批量执行；
     # 2. 处于普通模式下，又分为3种情况：
     #	2.1 目标命令为WATCH，则发送给redis立即执行；
-	#	2.2 目标命令不为WATCH，但之前已经执行过WATCH命令(watching属性为True)，则发送给redis立即执行(ps:若想使后面的命令批量执行，则必须显示调用multi方法)
+    #	2.2 目标命令不为WATCH，但之前已经执行过WATCH命令(watching属性为True)，则发送给redis立即执行(ps:若想使后面的命令批量执行，则必须显示调用multi方法)
     #	2.3 其余情况都按照情况1处理---把命令添加到command_stack，稍后批量执行；
     #
     def execute_command(self, *args, **kwargs):
@@ -1947,11 +1948,11 @@ class BasePipeline(object):
                                                        self.shard_hint)
             self.connection = conn
         try:
-        	# 发送命令
+	    # 发送命令
             conn.send_command(*args)
             return self.parse_response(conn, command_name, **options)
         except ConnectionError:
-			# socket错误，retry FIXME
+	    # socket错误，retry FIXME
             conn.disconnect()
             if not self.watching:
                 conn.send_command(*args)
@@ -1976,7 +1977,7 @@ class BasePipeline(object):
         all_cmds = SYM_EMPTY.join(
             starmap(connection.pack_command,
                     [args for args, options in cmds]))
-		# 发送命令
+	# 发送命令
         connection.send_packed_command(all_cmds)
         errors = []
     
@@ -1984,7 +1985,7 @@ class BasePipeline(object):
         try:
             self.parse_response(connection, '_')
         except ResponseError:
-			# 若出现错误，则添加仅errors列表
+	    # 若出现错误，则添加仅errors列表
             errors.append((0, sys.exc_info()[1]))
 
         # 循环解析命令组中命令执行结果(若redis执行正确，返回'QUEUED')
@@ -1992,13 +1993,13 @@ class BasePipeline(object):
             try:
                 self.parse_response(connection, '_')
             except ResponseError:
-				# 若出现错误，则添加仅errors列表
+	        # 若出现错误，则添加仅errors列表
                 errors.append((i, sys.exc_info()[1]))
 
         # 解析EXEC命令的执行结果
-		#
-		# 注意，redis刚才并没有真正执行命令组中的命令，而只是缓存起来(QUEUED),
-		# 然后当它收到EXEC命令后，才把刚才缓存中的命令逐一执行
+	#
+	# 注意，redis刚才并没有真正执行命令组中的命令，而只是缓存起来(QUEUED),
+	# 然后当它收到EXEC命令后，才把刚才缓存中的命令逐一执行
         try:
             response = self.parse_response(connection, '_')
         except ExecAbortError:
@@ -2009,7 +2010,7 @@ class BasePipeline(object):
                 raise errors[0][1]
             raise sys.exc_info()[1]
 
-		# FIXME
+	# FIXME
     	# 事务执行失败，原因：在事务执行期间，监视的键被修改
         if response is None:
             raise WatchError("Watched variable changed.")
@@ -2122,7 +2123,7 @@ class BasePipeline(object):
             self.connection = conn
 
         try:
-        	# 批量执行命令
+	    # 批量执行命令
             return execute(conn, stack, raise_on_error)
         except ConnectionError:
             conn.disconnect()
