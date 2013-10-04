@@ -253,11 +253,13 @@ def parse_script(response, **options):
 # >>> client.info()
 # {'aof_rewrite_in_progress': 0, 'role': 'master', 'used_memory_rss': 1974272, ...} 
 #
+# StrictRedis是线程安全的，可以在多个线程中使用同一个实例
+#
 class StrictRedis(object):
 
     # RESPONSE_CALLBACKS 属性作用：
     #
-    # redis有些命令的执行结果对客户端来说是不友好的，譬如：
+    # redis有些命令的执行结果对用户来说是不友好的，譬如：
     # BGSAVE命令的返回结果是：Background saving started
     # 如果我们直接把这样的结果返回给用户，那么用户就必须了解redis更多的细节，
     # 否则它无法知道返回结果的含义，也就无法知道命令是否执行成功; 
@@ -456,13 +458,13 @@ class StrictRedis(object):
             # 返回command执行结果
             return self.parse_response(connection, command_name, **options)
         except ConnectionError:
-            # socket 链接错误， retry
+            # socket连接错误，retry
             connection.disconnect()
             connection.send_command(*args) 
             return self.parse_response(connection, command_name, **options)
         finally: 
-        	# 释放连接 
-        	pool.release(connection) 
+ 		    # 释放连接 
+		    pool.release(connection) 
 
     # 获取命令的执行结果
     #
@@ -1681,6 +1683,9 @@ class Redis(StrictRedis):
 #
 # 关于redis发布订阅功能实现原理，可以参看：http://diaocow.iteye.com/blog/1935094
 #
+# 另外，PubSub不是线程安全的，因为它是有状态的
+# 若在线程A和线程B使用了同一个实例，那么就可能发生消息紊乱情况：A收到B订阅频道发来的消息，B收到A订阅频道发来的消息
+#
 class PubSub(object):
 
     def __init__(self, connection_pool, shard_hint=None):
@@ -1814,7 +1819,10 @@ class PubSub(object):
     def listen(self):
         while self.subscription_count or self.channels or self.patterns:
             r = self.parse_response()
-	   # 收到的消息类型
+	        # 收到的消息类型，基本上按照type可以分为三类：
+			# a. pmessage: 模式消息
+			# b. message: 频道消息
+			# c. 命令消息: 执行PSUBSCRIBE，SUBSCRIBE等命令返回的消息
             msg_type = nativestr(r[0])
         	# 模式消息
             if msg_type == 'pmessage':
@@ -1824,7 +1832,7 @@ class PubSub(object):
                     'channel': nativestr(r[2]),
                     'data': r[3]
                 }
-	    # 频道消息或者PSUBSCRIBE, SUBSCRIBE等命令执行的返回结果
+	        # 频道消息或者命令消息
             else:
                 msg = {
                     'type': msg_type,
@@ -1832,7 +1840,7 @@ class PubSub(object):
                     'channel': nativestr(r[1]),
                     'data': r[2]
                 }
-	    # 返回消息
+	        # 返回消息
             yield msg
 
 
@@ -1846,7 +1854,7 @@ class PubSub(object):
 # >>> client.mget("name", "age")
 # >>> client.execute()
 #
-# 2. 普通模式： 与单个命令执行效果基本一致，但改用批量执行可以提高信道的使用率
+# 2. 普通模式： 与单个命令分别执行效果基本相同，但改用批量执行可以提高信道的使用率
 #
 # >>> client = redis.StrictRedis().pipeline(transaction=False)
 # >>> client.set("name", "jack")
@@ -1856,7 +1864,7 @@ class PubSub(object):
 #
 # 调用multi()方法，可以强制从普通模式切换到事务模式
 #
-# 这两种模式，在写法上没有太多的区别(仅仅是一个参数值的差异)，但对Redis来说两种方式执行过程就完全不同了
+# 这两种模式在写法上没有太多的区别(仅仅是一个参数值的差异)，但对Redis来说两种方式执行过程就完全不同了
 #
 # 关于redis事务实现原理，可以参看：http://diaocow.iteye.com/blog/1935092
 #
@@ -1926,12 +1934,12 @@ class BasePipeline(object):
     # 覆写StrictRedis.execute_command方法
     #
     # 该方法执行过程：
-    # 1. 处于事务模式，则把命令添加到command_stack，稍后批量执行；
-    # 2. 处于普通模式下，又分为3种情况：
+    # 1. 若处于"显示事务"状态（explicit_transaction为True)，则把命令添加到command_stack，稍后批量执行；
+    # 2. 其余情况又分为下面三种：
     #	2.1 目标命令为WATCH，则发送给redis立即执行；
-    #	2.2 目标命令不为WATCH，但之前已经执行过WATCH命令(watching属性为True)，则发送给redis立即执行(ps:若想使后面的命令批量执行，则必须显示调用multi方法)
+    #	2.2 目标命令不为WATCH，但之前已经执行过WATCH命令(watching属性为True)，则同样把立即执行(若想使后面的命令批量执行，则必须调用multi方法)
     #	2.3 其余情况都按照情况1处理---把命令添加到command_stack，稍后批量执行；
-    #
+	#
     def execute_command(self, *args, **kwargs):
         if (self.watching or args[0] == 'WATCH') and \
                 not self.explicit_transaction:
@@ -1967,6 +1975,47 @@ class BasePipeline(object):
     	# 返回self本身，用来支持链式调用，eg:
     	# pipe.set('name', 'diaocow').set('age', 25).mget('name', 'age').execute()
         return self 
+	
+    # 批量执行命令 or 执行事务
+    def execute(self, raise_on_error=True):
+        stack = self.command_stack
+        if not stack:
+            return []
+        # FIXME
+        if self.scripts:
+            self.load_scripts()
+        	
+        # 若事务选项打开，则以事务的方式执行命令，否则以普通方式批量执行命令
+        if self.transaction or self.explicit_transaction:
+            execute = self._execute_transaction
+        else:
+            execute = self._execute_pipeline
+
+    	# 获取连接
+        conn = self.connection
+        if not conn:
+            conn = self.connection_pool.get_connection('MULTI',
+                                                       self.shard_hint)
+            self.connection = conn
+
+        try:
+	    # 批量执行命令
+            return execute(conn, stack, raise_on_error)
+        except ConnectionError:
+            conn.disconnect()
+            # if we were watching a variable, the watch is no longer valid
+            # since this connection has died. raise a WatchError, which
+            # indicates the user should retry his transaction. If this is more
+            # than a temporary failure, the WATCH that the user next issue
+            # will fail, propegating the real ConnectionError
+            if self.watching:
+                raise WatchError("A ConnectionError occured on while watching "
+                                 "one or more keys")
+            # otherwise, it's safe to retry since the transaction isn't
+            # predicated on any state
+            return execute(conn, stack, raise_on_error)
+        finally:
+            self.reset()
 
     # 以事务方式批量执行命令 
     # @see BasePipeline.execute
@@ -1977,7 +2026,7 @@ class BasePipeline(object):
         all_cmds = SYM_EMPTY.join(
             starmap(connection.pack_command,
                     [args for args, options in cmds]))
-	# 发送命令
+	    # 发送命令
         connection.send_packed_command(all_cmds)
         errors = []
     
@@ -1999,7 +2048,7 @@ class BasePipeline(object):
         # 解析EXEC命令的执行结果
 	#
 	# 注意，redis刚才并没有真正执行命令组中的命令，而只是缓存起来(QUEUED),
-	# 然后当它收到EXEC命令后，才把刚才缓存中的命令逐一执行
+	# 当它收到EXEC命令后，才把刚才缓存中的命令逐一执行
         try:
             response = self.parse_response(connection, '_')
         except ExecAbortError:
@@ -2015,13 +2064,13 @@ class BasePipeline(object):
         if response is None:
             raise WatchError("Watched variable changed.")
 
-		# 把errors列表中的异常，添加进response中相应的位置，response最终样子会是：
-		#
-		# response[0]: MULTI命令执行的结果或是异常
-		# response[1]: 命令组中第一个命令执行的结果或是异常
-		# response[2]: 命令组中第二个命令执行的结果或是异常
-		# ...
-		# response[n-1]: EXEC命令执行的结果或是异常
+        # 把errors列表中的异常，添加进response中相应的位置，response最终样子会是：
+        #
+	    # response[0]: MULTI命令执行的结果或是异常
+	    # response[1]: 命令组中第一个命令执行的结果或是异常
+	    # response[2]: 命令组中第二个命令执行的结果或是异常
+	    # ...
+	    # response[n-1]: EXEC命令执行的结果或是异常
         for i, e in errors:
             response.insert(i, e)
 
@@ -2029,11 +2078,11 @@ class BasePipeline(object):
             raise ResponseError("Wrong number of response items from "
                                 "pipeline execution")
 
-		# 1. 若raise_on_error中True(默认值)
-		#		当命令组中的有未正确执行的命令，抛出异常
-		#
-		# 2. 若raise_on_error中False
-		#		不抛异常，并且返回的结果集中只包含执行正确的结果
+	    # 1. 若raise_on_error中True(默认值)
+	    #		当命令组中的有未正确执行的命令，抛出异常
+	    #
+	    # 2. 若raise_on_error中False
+	    #		不抛异常，并且返回的结果集中只包含执行正确的结果
         if raise_on_error:
             self.raise_first_error(response)
 
@@ -2057,7 +2106,11 @@ class BasePipeline(object):
         # 向redis服务器发送命令
         connection.send_packed_command(all_cmds)
 
-    	# 返回命令执行结果，若某个命令执行出错，则抛出异常
+	    # 1. 若raise_on_error中True(默认值)
+	    #		当命令组中的有未正确执行的命令，抛出异常
+	    #
+	    # 2. 若raise_on_error中False
+	    #		不抛异常，结果集中包含命令执行正确的结果或是异常
         response = []
         for args, options in commands:
             try:
@@ -2100,46 +2153,6 @@ class BasePipeline(object):
                 if not exist:
                     immediate('SCRIPT', 'LOAD', s.script, **{'parse': 'LOAD'})
 
-    # 批量执行命令 or 执行事务
-    def execute(self, raise_on_error=True):
-        stack = self.command_stack
-        if not stack:
-            return []
-        # FIXME
-        if self.scripts:
-            self.load_scripts()
-        	
-        # 若事务选项打开，则以事务的方式执行命令，否则以普通方式批量执行命令
-        if self.transaction or self.explicit_transaction:
-            execute = self._execute_transaction
-        else:
-            execute = self._execute_pipeline
-
-    	# 获取连接
-        conn = self.connection
-        if not conn:
-            conn = self.connection_pool.get_connection('MULTI',
-                                                       self.shard_hint)
-            self.connection = conn
-
-        try:
-	    # 批量执行命令
-            return execute(conn, stack, raise_on_error)
-        except ConnectionError:
-            conn.disconnect()
-            # if we were watching a variable, the watch is no longer valid
-            # since this connection has died. raise a WatchError, which
-            # indicates the user should retry his transaction. If this is more
-            # than a temporary failure, the WATCH that the user next issue
-            # will fail, propegating the real ConnectionError
-            if self.watching:
-                raise WatchError("A ConnectionError occured on while watching "
-                                 "one or more keys")
-            # otherwise, it's safe to retry since the transaction isn't
-            # predicated on any state
-            return execute(conn, stack, raise_on_error)
-        finally:
-            self.reset()
 
     # 监视某些键：若在事务执行期间，监视的键被修改，则事务执行失败
     def watch(self, *names):
