@@ -396,7 +396,7 @@ class StrictRedis(object):
         "Set a custom Response Callback"
         self.response_callbacks[command] = callback
 
-    # 获取Pipeline实例，用来批量执行命令(默认以事务方式)
+    # 获取Pipeline实例，该实例用来批量执行命令
     # @see BasePipeline
     def pipeline(self, transaction=True, shard_hint=None):
         return StrictPipeline(
@@ -1837,7 +1837,7 @@ class PubSub(object):
 
 # 批量执行命令实现类, 它有两种模式：
 #
-# 1. 事务模式： 命令组中所有命令是一个原子操作，要么都执行，要么都不执行
+# 1. 事务模式： 命令组中所有命令是一个原子操作---要么都执行，要么都不执行
 #
 # >>> client = redis.StrictRedis().pipeline(transaction=True)
 # >>> client.set("name", "jack")
@@ -1853,11 +1853,11 @@ class PubSub(object):
 # >>> client.mget("name", "age")
 # >>> client.execute()
 #
-# 可以调用multi()方法，强制从普通模式切换到事务模式
+# 调用multi()方法，可以强制从普通模式切换到事务模式
 #
 # 这两种模式，在写法上没有太多的区别(仅仅是一个参数值的差异)，但对Redis来说两种方式执行过程就完全不同了
 #
-# 关于redis事务实现原理可以参看：http://diaocow.iteye.com/blog/1935092
+# 关于redis事务实现原理，可以参看：http://diaocow.iteye.com/blog/1935092
 #
 class BasePipeline(object):
 
@@ -1926,9 +1926,10 @@ class BasePipeline(object):
     #
     # 该方法执行过程：
     # 1. 处于事务模式，则把命令添加到command_stack，稍后批量执行；
-    # 2. 处于普通模式下，又分为两种情况：
-    #	2.1 目标命令为WATCH或者之前已经执行过WATCH命令，则发送给redis立即执行；
-    #	2.2 其余情况都按照情况1处理，把命令添加到command_stack，稍后批量执行；
+    # 2. 处于普通模式下，又分为3种情况：
+    #	2.1 目标命令为WATCH，则发送给redis立即执行；
+	#	2.2 目标命令不为WATCH，但之前已经执行过WATCH命令(watching属性为True)，则发送给redis立即执行(ps:若想使后面的命令批量执行，则必须显示调用multi方法)
+    #	2.3 其余情况都按照情况1处理---把命令添加到command_stack，稍后批量执行；
     #
     def execute_command(self, *args, **kwargs):
         if (self.watching or args[0] == 'WATCH') and \
@@ -1937,7 +1938,7 @@ class BasePipeline(object):
         return self.pipeline_execute_command(*args, **kwargs)
 
     # 立即执行命令 
-    # @see PubSub.execute_command
+    # @see BasePipeline.execute_command
     def immediate_execute_command(self, *args, **options):
         command_name = args[0]
         conn = self.connection
@@ -1950,7 +1951,7 @@ class BasePipeline(object):
             conn.send_command(*args)
             return self.parse_response(conn, command_name, **options)
         except ConnectionError:
-    		# FIXME
+			# socket错误，retry FIXME
             conn.disconnect()
             if not self.watching:
                 conn.send_command(*args)
@@ -1963,49 +1964,63 @@ class BasePipeline(object):
     def pipeline_execute_command(self, *args, **options):
         self.command_stack.append((args, options))
     	# 返回self本身，用来支持链式调用，eg:
-    	# pipe.set('name', 'diaocow').set('age', 25).set('country', 'china').mget('name', 'age', 'country').execute()
+    	# pipe.set('name', 'diaocow').set('age', 25).mget('name', 'age').execute()
         return self 
 
-    # 以事务方式批量执行命令 FIXME
+    # 以事务方式批量执行命令 
     # @see BasePipeline.execute
     def _execute_transaction(self, connection, commands, raise_on_error):
-        # 把要执行的命令置于MULTI和EXEC之间
+        # 把命令组中的命令置于MULTI和EXEC之间
         cmds = chain([(('MULTI', ), {})], commands, [(('EXEC', ), {})])
-        # 把命令组按照Redis请求协议转换
+        # 把命令按照Redis Command协议转换
         all_cmds = SYM_EMPTY.join(
             starmap(connection.pack_command,
                     [args for args, options in cmds]))
+		# 发送命令
         connection.send_packed_command(all_cmds)
         errors = []
     
-        # 解析对MULTI命令的执行结果
+        # 解析MULTI命令的执行结果(若redis执行正确，返回'OK')
         try:
             self.parse_response(connection, '_')
         except ResponseError:
+			# 若出现错误，则添加仅errors列表
             errors.append((0, sys.exc_info()[1]))
 
-        # 解析对命令组命令的执行结果
+        # 循环解析命令组中命令执行结果(若redis执行正确，返回'QUEUED')
         for i, _ in enumerate(commands):
             try:
                 self.parse_response(connection, '_')
             except ResponseError:
+				# 若出现错误，则添加仅errors列表
                 errors.append((i, sys.exc_info()[1]))
 
-        # 解析EXEC命令执行结果(此时redis才真正的把刚才命令组中的命令逐一执行) 
+        # 解析EXEC命令的执行结果
+		#
+		# 注意，redis刚才并没有真正执行命令组中的命令，而只是缓存起来(QUEUED),
+		# 然后当它收到EXEC命令后，才把刚才缓存中的命令逐一执行
         try:
             response = self.parse_response(connection, '_')
         except ExecAbortError:
+			# FIXME
             if self.explicit_transaction:
                 self.immediate_execute_command('DISCARD')
             if errors:
                 raise errors[0][1]
             raise sys.exc_info()[1]
 
-    	# 事务执行失败，失败原因：在事务执行期间，监视的键被修改
+		# FIXME
+    	# 事务执行失败，原因：在事务执行期间，监视的键被修改
         if response is None:
             raise WatchError("Watched variable changed.")
 
-        # put any parse errors into the response
+		# 把errors列表中的异常，添加进response中相应的位置，response最终样子会是：
+		#
+		# response[0]: MULTI命令执行的结果或是异常
+		# response[1]: 命令组中第一个命令执行的结果或是异常
+		# response[2]: 命令组中第二个命令执行的结果或是异常
+		# ...
+		# response[n-1]: EXEC命令执行的结果或是异常
         for i, e in errors:
             response.insert(i, e)
 
@@ -2013,11 +2028,14 @@ class BasePipeline(object):
             raise ResponseError("Wrong number of response items from "
                                 "pipeline execution")
 
-        # find any errors in the response and raise if necessary
+		# 1. 若raise_on_error中True(默认值)
+		#		当命令组中的有未正确执行的命令，抛出异常
+		#
+		# 2. 若raise_on_error中False
+		#		不抛异常，并且返回的结果集中只包含执行正确的结果
         if raise_on_error:
             self.raise_first_error(response)
 
-        # 事务执行正确，返回处理结果
         data = []
         for r, cmd in izip(response, commands):
             if not isinstance(r, Exception):
