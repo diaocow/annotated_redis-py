@@ -375,7 +375,7 @@ class StrictRedis(object):
                 'encoding_errors': errors,
                 'decode_responses': decode_responses,
             }
-        	# 若指定了unix_socket_path，则client与redis之间连接采用UnixDomain协议，否则采用TCP协议
+            # 若指定了unix_socket_path，则client与redis之间连接采用UnixDomain协议，否则采用TCP协议
             if unix_socket_path:
                 kwargs.update({
                     'path': unix_socket_path,
@@ -386,7 +386,7 @@ class StrictRedis(object):
                     'host': host,
                     'port': port
                 })
-		    # 创建连接池
+	    # 创建连接池
             connection_pool = ConnectionPool(**kwargs)
 
         self.connection_pool = connection_pool
@@ -463,8 +463,8 @@ class StrictRedis(object):
             connection.send_command(*args) 
             return self.parse_response(connection, command_name, **options)
         finally: 
-		    # 释放连接 
-		    pool.release(connection) 
+	    # 释放连接 
+	    pool.release(connection) 
 
     # 获取命令的执行结果
     #
@@ -1733,7 +1733,7 @@ class PubSub(object):
         connection = self.connection
 
         try:
-	        # 发送订阅相关命令(PSUBSCRIBE, SUBSCRIBE, PUNSUBSCRIBE, UNSUBSCRIBE)
+	    # 发送订阅相关命令(PSUBSCRIBE, SUBSCRIBE, PUNSUBSCRIBE, UNSUBSCRIBE)
             connection.send_command(*args)
         except ConnectionError:
 	    # 若socket连接出现错误，则retry：
@@ -1758,7 +1758,7 @@ class PubSub(object):
         response = self.connection.read_response()
         if nativestr(response[0]) in self.subscribe_commands:
             self.subscription_count = response[2]
-	        # 若当前客户端没有订阅任何频道或者模式，则断开与redis服务器之间的连接(ps: 个人觉得这步不是很有必要)
+	    # 若当前客户端没有订阅任何频道或者模式，则断开与redis服务器之间的连接(ps: 个人觉得这步不是很有必要)
             if not self.subscription_count:
                 self.reset()
         return response
@@ -1819,10 +1819,10 @@ class PubSub(object):
     def listen(self):
         while self.subscription_count or self.channels or self.patterns:
             r = self.parse_response()
-		    # 收到的消息类型，基本上按照type可以分为三类：
-		    # a. pmessage: 模式消息
-		    # b. message: 频道消息
-		    # c. 命令消息: 执行PSUBSCRIBE，SUBSCRIBE等命令返回的消息
+	    # 收到的消息类型，基本上按照type可以分为三类：
+	    # a. pmessage: 模式消息
+	    # b. message: 频道消息
+	    # c. 命令消息: 执行PSUBSCRIBE，SUBSCRIBE等命令返回的消息
             msg_type = nativestr(r[0])
 		    # 模式消息
             if msg_type == 'pmessage':
@@ -1832,7 +1832,7 @@ class PubSub(object):
                     'channel': nativestr(r[2]),
                     'data': r[3]
                 }
-		    # 频道消息或者命令消息
+    	    # 频道消息或者命令消息
             else:
                 msg = {
                     'type': msg_type,
@@ -1840,7 +1840,7 @@ class PubSub(object):
                     'channel': nativestr(r[1]),
                     'data': r[2]
                 }
-		    # 返回消息
+    	    # 返回消息
             yield msg
 
 
@@ -1941,7 +1941,7 @@ class BasePipeline(object):
     #	2.1 目标命令为WATCH，则发送给redis立即执行；
     #	2.2 目标命令不为WATCH，但之前已经执行过WATCH命令(watching属性为True)，则同样把立即执行(若想使后面的命令批量执行，则必须调用multi方法)
     #	2.3 其余情况都按照情况1处理---把命令添加到command_stack，稍后批量执行；
-	#
+    #
     def execute_command(self, *args, **kwargs):
         if (self.watching or args[0] == 'WATCH') and \
                 not self.explicit_transaction:
@@ -1958,7 +1958,7 @@ class BasePipeline(object):
                                                        self.shard_hint)
             self.connection = conn
         try:
-	        # 发送命令
+	    # 发送命令
             conn.send_command(*args)
             return self.parse_response(conn, command_name, **options)
         except ConnectionError:
@@ -2000,7 +2000,7 @@ class BasePipeline(object):
             self.connection = conn
 
         try:
-	        # 批量执行命令
+	    # 批量执行命令
             return execute(conn, stack, raise_on_error)
         except ConnectionError:
             conn.disconnect()
@@ -2027,7 +2027,7 @@ class BasePipeline(object):
         all_cmds = SYM_EMPTY.join(
             starmap(connection.pack_command,
                     [args for args, options in cmds]))
-	    # 发送命令
+	# 发送命令
         connection.send_packed_command(all_cmds)
         errors = []
     
@@ -2043,43 +2043,43 @@ class BasePipeline(object):
             try:
                 self.parse_response(connection, '_')
             except ResponseError:
-	            # 若出现错误，则添加仅errors列表(对于命令组中的命令，redis会做命令参数个数检查，由于客户端保证了这点，所以这边也基本不会出错)
+	        # 若出现错误，则添加仅errors列表(对于命令组中的命令，redis会做命令参数个数检查，由于客户端保证了这点，所以这边也基本不会出错)
                 errors.append((i, sys.exc_info()[1]))
 
         # 解析EXEC命令的执行结果
-	    #
-	    # 注意，redis其实刚才并没有真正执行命令组中的命令，而只是缓存起来(QUEUED)，当它收到EXEC命令后，才把刚才缓存中的命令逐一执行
+        #
+        # 注意，redis其实刚才并没有真正执行命令组中的命令，而只是缓存起来(QUEUED)，当它收到EXEC命令后，才把刚才缓存中的命令逐一执行
         try:
-			# reponse中结果是一个list, 最终样子会是：
-			# response[0]: 命令组中第一个命令执行的结果或是异常
-			# response[1]: 命令组中第二个命令执行的结果或是异常
-			# ...
-			# response[n-1]: 命令组中最后一个命令执行的结果或是异常
-			#
+	    # reponse中结果是一个list, 最终样子会是：
+	    # response[0]: 命令组中第一个命令执行的结果或是异常
+	    # response[1]: 命令组中第二个命令执行的结果或是异常
+	    # ...
+	    # response[n-1]: 命令组中最后一个命令执行的结果或是异常
+	    #
             response = self.parse_response(connection, '_')
         except ExecAbortError: 
-			# 解析类使用的是PythonParser，则会发生这种异常 FIXME 
+	    # 解析类使用的是PythonParser，则会发生这种异常 FIXME 
             if self.explicit_transaction:
                 self.immediate_execute_command('DISCARD') 
             if errors:
                 raise errors[0][1]
             raise sys.exc_info()[1]
 
-		# 事务执行失败，原因：在事务执行期间，监视的键被修改
+	# 事务执行失败，原因：在事务执行期间，监视的键被修改
         if response is None:
             raise WatchError("Watched variable changed.")
 
-		# 顺便说一下，导致事务执行失败一共有三个原因：
-		#
-		# 1. 命令参数个数不正确
-		#	 譬如使用set命令：set name diaocow jack (客户端可以避免这种错误类型）
-		#
-		# 2. 命令类型不正确
-		# 	 譬如对string类型的键，使用list类型的命令：set name diaocow; lpush name 25
-		# 	 这种错误属于运行时错误，reponse中的结果类似：[ResponseError('ERR Operation against a key holding the wrong kind of value',)]
-		#
-		# 3. 监视的键被修改
-		#
+	# 顺便说一下，导致事务执行失败一共有三个原因：
+	#
+	# 1. 命令参数个数不正确
+	#	 譬如使用set命令：set name diaocow jack (客户端可以避免这种错误类型）
+	#
+	# 2. 命令类型不正确
+	# 	 譬如对string类型的键，使用list类型的命令：set name diaocow; lpush name 25
+	# 	 这种错误属于运行时错误，reponse中的结果类似：[ResponseError('ERR Operation against a key holding the wrong kind of value',)]
+	#
+	# 3. 监视的键被修改
+	#
 
         for i, e in errors:  
             response.insert(i, e)
@@ -2088,27 +2088,27 @@ class BasePipeline(object):
             raise ResponseError("Wrong number of response items from "
                                 "pipeline execution")
 
-	    # 1. 若raise_on_error中True(默认值)
-	    #		当命令组中的有未正确执行的命令，抛出异常(事务执行失败)Examples:
-		#
-		#		>>> pipeline.set('name', 'diaocow')
-		#		>>> pipeline.get('name')
-		#		>>> pipeline.lpush('name', 25)     <== 命令类型错误
-		#		>>> pipeline.execute()
-		#		Traceback (most recent call last):	
-	    #       ....
-		#		....
-		#		redis.exceptions.ResponseError: ERR Operation against a key holding the wrong kind of value
+	    # 1.若raise_on_error中True(默认值)
+    	    #	当命令组中的有未正确执行的命令，抛出异常(事务执行失败)Examples:
 	    #
-	    # 2. 若raise_on_error中False
-	    #		不抛异常(无视事务执行失败) ，返回命令组执行结果，Examples:
-		#
-		#		>>> pipeline.set('name', 'diaocow')
-		#		>>> pipeline.get('name')
-		#		>>> pipeline.lpush('name', 25)     <== 命令类型错误
-		#		>>> pipeline.execute(raise_on_error=False)
-		#		[True, 'diaocow', ResponseError('ERR Operation against a key holding the wrong kind of value',)]'')'']
-		#
+	    #	>>> pipeline.set('name', 'diaocow')
+	    #	>>> pipeline.get('name')
+	    #	>>> pipeline.lpush('name', 25)     <== 命令类型错误
+	    #	>>> pipeline.execute()
+	    #	Traceback (most recent call last):	
+	    #   ....
+	    #	....
+	    #	redis.exceptions.ResponseError: ERR Operation against a key holding the wrong kind of value
+	    #
+	    # 2.若raise_on_error中False
+	    #	不抛异常(无视事务执行失败) ，返回命令组执行结果，Examples:
+	    #
+	    #	>>> pipeline.set('name', 'diaocow')
+	    #	>>> pipeline.get('name')
+	    #	>>> pipeline.lpush('name', 25)     <== 命令类型错误
+	    #	>>> pipeline.execute(raise_on_error=False)
+	    #	[True, 'diaocow', ResponseError('ERR Operation against a key holding the wrong kind of value',)]'')'']
+	    #
         if raise_on_error:
             self.raise_first_error(response)
 
@@ -2132,12 +2132,12 @@ class BasePipeline(object):
         # 向redis服务器发送命令
         connection.send_packed_command(all_cmds)
 
-	    # 1. 若raise_on_error中True(默认值)
-	    #		当命令组中的有未正确执行的命令，抛出异常
-	    #
-	    # 2. 若raise_on_error中False
-	    #		不抛异常
-		#
+        # 1.若raise_on_error中True(默认值)
+        #   当命令组中的有未正确执行的命令，抛出异常
+        #
+        # 2.若raise_on_error中False
+        #   不抛异常
+        #
         response = []
         for args, options in commands:
             try:
@@ -2180,25 +2180,25 @@ class BasePipeline(object):
 
 
     # 监视某些键，若在事务执行期间，监视的键被修改，则事务执行失败
-	#
-	# Examples: 原子性递增值
-	#
+    #
+    # Examples: 原子性递增值
+    #
     # >>> with r.pipeline() as pipe:
-	# ...     while True:
+    # ...     while True:
     # ...         try:
-	# ...             # 监视键 visitors
-	# ...             current_value = pipe.get('visitors')
-	# ...             next_value = int(current_value) + 1     
-	# ...             # 原子性递增visitors          
-	# ...             pipe.multi()                                      
-	# ...             pipe.set('visitors', next_value)          
-	# ...             pipe.execute()
-	# ...             # 递增visitors值成功，break
-	# ...             break                                                                                                           
-	# ...         except WatchError:
-	# ...             # 若因WathError导致事务执行失败，说明在执行 set visitors, next_value命令之前，visitor的值已经被其他客户端修改，只能retry 
-	# ...             continue
-	#
+    # ...             # 监视键 visitors
+    # ...             current_value = pipe.get('visitors')
+    # ...             next_value = int(current_value) + 1     
+    # ...             # 原子性递增visitors          
+    # ...             pipe.multi()                                      
+    # ...             pipe.set('visitors', next_value)          
+    # ...             pipe.execute()
+    # ...             # 递增visitors值成功，break
+    # ...             break                                                                                                           
+    # ...         except WatchError:
+    # ...             # 若因WathError导致事务执行失败，说明在执行 set visitors, next_value命令之前，visitor的值已经被其他客户端修改，只能retry 
+    # ...             continue
+    #
     def watch(self, *names):
         # WATCH命令只能在执行事务之前使用 
         if self.explicit_transaction:
