@@ -407,12 +407,20 @@ class StrictRedis(object):
             transaction,
             shard_hint)
 
+	# 执行事务的另一种调用方式
+	#
+	# >>> def incr_visitors(pipe):
+	# ...	current_value = pipe.get('visitors')	
+	# ...	next_value = int(current_value) + 1
+	# ...	pipe.multi()
+	# ...	pipe.set('visitors', next_value)   <= 原子性递增值
+	# ...	
+	# >>> client = redis.StrictRedis() 
+	# >>> client.transaction(incr_visitors, 'visitors')
+	# [True]
+	#
+	# @see BasePipeline.watch
     def transaction(self, func, *watches, **kwargs):
-        """
-        Convenience method for executing the callable `func` as a transaction
-        while watching all keys specified in `watches`. The 'func' callable
-        should expect a single arguement which is a Pipeline object.
-        """
         shard_hint = kwargs.pop('shard_hint', None)
         value_from_callable = kwargs.pop('value_from_callable', False)
         with self.pipeline(True, shard_hint) as pipe:
@@ -1853,6 +1861,7 @@ class PubSub(object):
 # >>> client.set("age", "25")
 # >>> client.mget("name", "age")
 # >>> client.execute()
+# [True, True, ['jack', 25]]
 #
 # 2. 普通模式： 与单个命令分别执行效果基本相同，但改用批量执行可以提高信道的使用率
 #
@@ -1861,6 +1870,7 @@ class PubSub(object):
 # >>> client.set("age", "25")
 # >>> client.mget("name", "age")
 # >>> client.execute()
+# [True, True, ['jack', 25]]
 #
 # 调用multi()方法，可以强制从普通模式切换到事务模式
 #
@@ -1887,6 +1897,19 @@ class BasePipeline(object):
         # 重置Pipeline状态
         self.reset()
 
+	# 覆写__enter__，__exit__方法，支持with语法：
+	#
+	# >>> with redis.StrictRedis().pipeline as pipe:
+	# ...	do_action(pipe)
+	#
+	# 等价与
+	#
+	# >>> pipe = redis.StrictRedis().pipeline
+	# >>> try:
+	# ...	do_action(pipe)
+	# >>> finally:
+	# ...	pipe.reset()
+	#
     def __enter__(self):
         return self
 
@@ -1903,6 +1926,7 @@ class BasePipeline(object):
         return len(self.command_stack)
 
 
+	# 重置pipeline状态
     def reset(self):
         self.command_stack = []
         self.scripts = set() 
@@ -2027,7 +2051,7 @@ class BasePipeline(object):
         all_cmds = SYM_EMPTY.join(
             starmap(connection.pack_command,
                     [args for args, options in cmds]))
-	# 发送命令
+	    # 发送命令
         connection.send_packed_command(all_cmds)
         errors = []
     
@@ -2043,7 +2067,7 @@ class BasePipeline(object):
             try:
                 self.parse_response(connection, '_')
             except ResponseError:
-	        # 若出现错误，则添加仅errors列表(对于命令组中的命令，redis会做命令参数个数检查，由于客户端保证了这点，所以这边也基本不会出错)
+	            # 若出现错误，则添加仅errors列表(对于命令组中的命令，redis会做命令参数个数检查，由于客户端保证了这点，所以这边也基本不会出错)
                 errors.append((i, sys.exc_info()[1]))
 
         # 解析EXEC命令的执行结果
@@ -2058,7 +2082,7 @@ class BasePipeline(object):
 	    #
             response = self.parse_response(connection, '_')
         except ExecAbortError: 
-	    # 解析类使用的是PythonParser，则会发生这种异常 FIXME 
+	        # FIXME 
             if self.explicit_transaction:
                 self.immediate_execute_command('DISCARD') 
             if errors:
