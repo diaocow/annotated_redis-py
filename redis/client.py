@@ -1824,7 +1824,7 @@ class PubSub(object):
 	    # b. message: 频道消息
 	    # c. 命令消息: 执行PSUBSCRIBE，SUBSCRIBE等命令返回的消息
             msg_type = nativestr(r[0])
-		    # 模式消息
+	    # 模式消息
             if msg_type == 'pmessage':
                 msg = {
                     'type': msg_type,
@@ -2088,27 +2088,27 @@ class BasePipeline(object):
             raise ResponseError("Wrong number of response items from "
                                 "pipeline execution")
 
-	    # 1.若raise_on_error中True(默认值)
-    	    #	当命令组中的有未正确执行的命令，抛出异常(事务执行失败)Examples:
-	    #
-	    #	>>> pipeline.set('name', 'diaocow')
-	    #	>>> pipeline.get('name')
-	    #	>>> pipeline.lpush('name', 25)     <== 命令类型错误
-	    #	>>> pipeline.execute()
-	    #	Traceback (most recent call last):	
-	    #   ....
-	    #	....
-	    #	redis.exceptions.ResponseError: ERR Operation against a key holding the wrong kind of value
-	    #
-	    # 2.若raise_on_error中False
-	    #	不抛异常(无视事务执行失败) ，返回命令组执行结果，Examples:
-	    #
-	    #	>>> pipeline.set('name', 'diaocow')
-	    #	>>> pipeline.get('name')
-	    #	>>> pipeline.lpush('name', 25)     <== 命令类型错误
-	    #	>>> pipeline.execute(raise_on_error=False)
-	    #	[True, 'diaocow', ResponseError('ERR Operation against a key holding the wrong kind of value',)]'')'']
-	    #
+        # 1.若raise_on_error中True(默认值)
+        #	当命令组中的有未正确执行的命令，抛出异常(事务执行失败)Examples:
+        #
+        #	>>> pipeline.set('name', 'diaocow')
+        #	>>> pipeline.get('name')
+        #	>>> pipeline.lpush('name', 25)     <== 命令类型错误
+        #	>>> pipeline.execute()
+        #	Traceback (most recent call last):	
+        #   ....
+        #	....
+        #	redis.exceptions.ResponseError: ERR Operation against a key holding the wrong kind of value
+        #
+        # 2.若raise_on_error中False
+        #	不抛异常(无视事务执行失败) ，返回命令组执行结果，Examples:
+        #
+        #	>>> pipeline.set('name', 'diaocow')
+        #	>>> pipeline.get('name')
+        #	>>> pipeline.lpush('name', 25)     <== 命令类型错误
+        #	>>> pipeline.execute(raise_on_error=False)
+        #	[True, 'diaocow', ResponseError('ERR Operation against a key holding the wrong kind of value',)]'')'']
+        #
         if raise_on_error:
             self.raise_first_error(response)
 
