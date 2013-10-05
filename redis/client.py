@@ -407,19 +407,19 @@ class StrictRedis(object):
             transaction,
             shard_hint)
 
-	# 执行事务的另一种调用方式
-	#
-	# >>> def incr_visitors(pipe):
-	# ...	current_value = pipe.get('visitors')	
-	# ...	next_value = int(current_value) + 1
-	# ...	pipe.multi()
-	# ...	pipe.set('visitors', next_value)   <= 原子性递增值
-	# ...	
-	# >>> client = redis.StrictRedis() 
-	# >>> client.transaction(incr_visitors, 'visitors')
-	# [True]
-	#
-	# @see BasePipeline.watch
+    # 执行事务的另一种调用方式
+    #
+    # >>> def incr_visitors(pipe):
+    # ...	current_value = pipe.get('visitors')	
+    # ...	next_value = int(current_value) + 1
+    # ...	pipe.multi()
+    # ...	pipe.set('visitors', next_value)   <= 原子性递增值
+    # ...	
+    # >>> client = redis.StrictRedis() 
+    # >>> client.transaction(incr_visitors, 'visitors')
+    # [True]
+    #
+    # @see BasePipeline.watch
     def transaction(self, func, *watches, **kwargs):
         shard_hint = kwargs.pop('shard_hint', None)
         value_from_callable = kwargs.pop('value_from_callable', False)
@@ -1897,19 +1897,19 @@ class BasePipeline(object):
         # 重置Pipeline状态
         self.reset()
 
-	# 覆写__enter__，__exit__方法，支持with语法：
-	#
-	# >>> with redis.StrictRedis().pipeline as pipe:
-	# ...	do_action(pipe)
-	#
-	# 等价与
-	#
-	# >>> pipe = redis.StrictRedis().pipeline
-	# >>> try:
-	# ...	do_action(pipe)
-	# >>> finally:
-	# ...	pipe.reset()
-	#
+    # 覆写__enter__，__exit__方法，支持with语法：
+    #
+    # >>> with redis.StrictRedis().pipeline as pipe:
+    # ...	do_action(pipe)
+    #
+    # 等价与
+    #
+    # >>> pipe = redis.StrictRedis().pipeline
+    # >>> try:
+    # ...	do_action(pipe)
+    # >>> finally:
+    # ...	pipe.reset()
+    #
     def __enter__(self):
         return self
 
@@ -1926,7 +1926,7 @@ class BasePipeline(object):
         return len(self.command_stack)
 
 
-	# 重置pipeline状态
+    # 重置pipeline状态
     def reset(self):
         self.command_stack = []
         self.scripts = set() 
