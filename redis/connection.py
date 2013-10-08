@@ -225,8 +225,8 @@ class HiredisParser(object):
             if not buffer:
                 raise ConnectionError("Socket closed on remote end")
             self._reader.feed(buffer)
-        	# 小技巧：
-        	# 若buffer中数据不是以'\n'结尾，说明还未接受完服务器数据，则直接开始下次循环(没必要调用gets()方法，因为肯定返回False）
+            # 小技巧：
+            # 若buffer中数据不是以'\n'结尾，说明还未接受完服务器数据，则直接开始下次循环(没必要调用gets()方法，因为肯定返回False）
             if not buffer.endswith(SYM_LF):
                 continue
             response = self._reader.gets()
@@ -252,7 +252,7 @@ class Connection(object):
         # redis服务器的host/port
         self.host = host
         self.port = port
-        # client连接的数据库，默认使用编号为0的数据库（一个redis实例默认有16个数据库） self.db = db self.password = password
+        # client连接的数据库，默认使用编号为0的数据库（一个redis实例默认有16个数据库） 
 	self.db = db
 	self.password = password
         self.socket_timeout = socket_timeout
@@ -275,7 +275,7 @@ class Connection(object):
         if self._sock:
             return
         try:
-    		# 1. 建立TCP连接
+    	    # 1. 建立TCP连接
             sock = self._connect()
         except socket.error:
             e = sys.exc_info()[1]
@@ -283,7 +283,7 @@ class Connection(object):
 
         self._sock = sock
         try:
-    		# 2. AUTH认证（可选）& 连接目标DB（SELECT-DB）
+    	    # 2. AUTH认证（可选）& 连接目标DB（SELECT-DB）
             self.on_connect()
         except RedisError:
             # clean up after any error in on_connect
@@ -341,7 +341,7 @@ class Connection(object):
         if not self._sock:
             self.connect()
         try:
-    		# 发送命令
+    	    # 发送命令
             self._sock.sendall(command)
         except socket.error:
             e = sys.exc_info()[1]
@@ -359,7 +359,7 @@ class Connection(object):
     # 读取命令执行结果
     def read_response(self):
         try:
-    		# @see HiredisParser.read_response
+    	    # @see HiredisParser.read_response
             response = self._parser.read_response()
         except:
             self.disconnect()
@@ -459,7 +459,7 @@ class ConnectionPool(object):
         try:
             connection = self._available_connections.pop()
         except IndexError:
-        	# 若没有可用的空闲连接，则创建一个新连接
+            # 若没有可用的空闲连接，则创建一个新连接
             connection = self.make_connection()
         self._in_use_connections.add(connection)
         return connection
@@ -557,7 +557,7 @@ class BlockingConnectionPool(object):
         self._checkpid()
         connection = None
         try:
-        	# 从连接池队列中获取一个连接
+       	    # 从连接池队列中获取一个连接
             connection = self.pool.get(block=True, timeout=self.timeout)
         except Empty:
             raise ConnectionError("No connection available.")
